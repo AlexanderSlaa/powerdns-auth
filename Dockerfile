@@ -16,7 +16,7 @@ RUN set -e; \
     ARCH=$(dpkg --print-architecture); \
     case "$ARCH" in \
         amd64)   SUBVARS_ARCH="x86_64" ;; \
-        arm64)   SUBVARS_ARCH="aarch64" ;; \
+        arm64)   SUBVARS_ARCH="arm64" ;; \
         *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;; \
     esac; \
     DOWNLOAD_URL="https://github.com/kha7iq/subvars/releases/download/v${LATEST_VERSION}/subvars_Linux_${SUBVARS_ARCH}.tar.gz"; \
