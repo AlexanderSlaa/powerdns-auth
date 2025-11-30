@@ -42,7 +42,7 @@ docker run -d \
   -e PDNS_gpgsql_password=secret \
   -e PDNS_gpgsql_dbname=pdns \
   --network my-net \
-  ghcr.io/<your-username>/pdns-authoritative:latest
+  docker pull ghcr.io/alexanderslaa/powerdns-auth:latest
 ```
 
 ### MySQL Backend
@@ -58,7 +58,7 @@ docker run -d \
   -e PDNS_gmysql_user=pdns \
   -e PDNS_gmysql_password=secret \
   -e PDNS_gmysql_dbname=pdns \
-  ghcr.io/<your-username>/pdns-authoritative:latest
+  docker pull ghcr.io/alexanderslaa/powerdns-auth:latest
 ```
 
 ## ⚙️ Configuration
