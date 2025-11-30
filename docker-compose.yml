@@ -1,0 +1,35 @@
+services:
+  # PostgreSQL database for PowerDNS
+  pdns-db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: powerdns
+      POSTGRES_PASSWORD: powerdns
+      POSTGRES_DB: powerdns
+    ports:
+      - "5432:5432"
+    volumes:
+      - pdns_db_data:/var/lib/postgresql
+
+  # PowerDNS Authoritative Server
+  pdns:
+    build: .  # builds from your Dockerfile in current directory
+    restart: unless-stopped
+    depends_on:
+      - pdns-db
+    environment:
+      PDNS_launch: gpgsql
+      PDNS_gpgsql_host: pdns-db
+      PDNS_gpgsql_port: 5432
+      PDNS_gpgsql_user: powerdns
+      PDNS_gpgsql_password: powerdns
+      PDNS_gpgsql_dbname: powerdns
+      # Optional: enable superslave/autosecondary
+      # PDNS_autosecondary: "yes"
+    ports:
+      - "53:53"
+      - "53:53/udp"
+
+volumes:
+  pdns_db_data:
