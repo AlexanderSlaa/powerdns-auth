@@ -106,21 +106,41 @@ fi
 # ---------------------------
 # SQLite3: gsqlite3
 # ---------------------------
+# ---------------------------
+# SQLite3: gsqlite3
+# ---------------------------
 if backend_enabled "gsqlite3"; then
     DB_PATH="$PDNS_gsqlite3_database"
-    echo "→ SQLite3 (gsqlite3) backend enabled. DB: $DB_PATH"
+    echo "→ SQLite3 (gpgsql) backend enabled. DB: $DB_PATH"
+
     if [ "${SKIP_DB_INIT:-false}" = "true" ]; then
         echo "  Skipping SQLite3 initialization."
     else
-        mkdir -p "$(dirname "$DB_PATH")"
-        chown pdns:pdns "$(dirname "$DB_PATH")"
+        DIR="$(dirname "$DB_PATH")"
+        mkdir -p "$DIR"
+
+        # Only chown if we're NOT on a mounted volume (i.e., avoid chown on bind mounts)
+        # Heuristic: if the parent is NOT under /var/lib, /etc/pdns, etc., skip chown
+        case "$DIR" in
+            /var/lib/powerdns|/etc/pdns|/run/powerdns)
+                chown pdns:pdns "$DIR"
+                ;;
+            *)
+                # Assume it's a user-provided path (e.g., mounted volume) — skip chown
+                echo "  ⚠️  Skipping chown on custom path: $DIR (ensure writable by UID 102)"
+                ;;
+        esac
 
         if [ -f "$DB_PATH" ] && sqlite3 "$DB_PATH" "SELECT 1 FROM domains LIMIT 1;" >/dev/null 2>&1; then
             echo "  SQLite3 schema already present."
         else
             echo "  Initializing SQLite3 schema..."
             sqlite3 "$DB_PATH" ".read /usr/share/doc/pdns-backend-sqlite3/schema.sqlite3.sql"
-            chown pdns:pdns "$DB_PATH"
+            # Only chown the file if we can (and if it's not on a restricted mount)
+            if [ -f "$DB_PATH" ]; then
+                chown pdns:pdns "$DB_PATH" 2>/dev/null || echo "  ⚠️  Could not chown DB file (may still work if writable)"
+                chmod 600 "$DB_PATH" 2>/dev/null || true
+            fi
         fi
     fi
 fi
